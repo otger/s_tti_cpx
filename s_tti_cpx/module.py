@@ -3,6 +3,7 @@
 from entropyfw import Module
 from entropyfw.common import get_utc_ts
 from pytticpx import CPX
+from .logger import log
 from .callbacks import UpdateV, UpdateI, UpdateVI
 # from .web.api.resources import get_api_resources
 # from .web.blueprints import get_blueprint
@@ -23,39 +24,60 @@ class EntropyTTiCPX(Module):
         self.v_keyword = None
         self.i_keyword = None
 
+    def set_voltage(self, output, volts):
+        log.debug("Received petition to set output {} to {}V".format(output, volts))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        volts = float(volts)
+        return self.cpx.setVoltage(output, volts)
+
+    def set_voltage_verify(self, output, volts):
+        log.debug("Received petition to set output {} to {}V and verify".format(output, volts))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        volts = float(volts)
+        return self.cpx.setVoltageVerify(output, volts)
+
+    def set_over_voltage_protection(self, output, volts):
+        log.debug("Received petition to set over voltage protection of output {} to {}V".format(output, volts))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        volts = float(volts)
+        return self.cpx.setOVP(output, volts)
+
+    def set_current_limit(self, output, amps):
+        log.debug("Received petition to set output {} current limit to {}A".format(output, amps))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        amps = float(amps)
+        return self.cpx.setCurrent(output, amps)
+
+    def get_voltage_setting(self, output):
+        log.debug("Received petition to get voltage setting of output {}".format(output))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        return self.cpx.getVoltage(output)
+
+    def get_current_limit_setting(self, output):
+        log.debug("Received petition to get current limit of output {}".format(output))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        return self.cpx.getCurrent(output)
+
+    def read_voltage(self, output):
+        log.debug("Received petition to get voltage at output {}".format(output))
+        output = int(output)
+        if output not in (1, 2):
+            raise Exception("Invalid channel")
+        return self.cpx.readVoltage(output)
+
+
     def pub_status(self):
         self.pub_event('status', self.te.status)
-
-    def register_event_v_applied(self, pattern, v_keyword, flags=0):
-        if self.v_keyword is None:
-            self.v_keyword = v_keyword
-            self.register_callback(callback=UpdateV, pattern=pattern, flags=flags)
-        else:
-            raise Exception('Only one event for V values can be registered')
-
-    def connect(self, ip, port):
-        self.cpx.connect(ip, port)
-        # May return any exception (TimeOut)
-
-    def register_event_apply_i(self, channel, pattern, i_keyword, flags=0):
-        if self.i_keyword is None:
-            self.i_keyword = i_keyword
-            self.register_callback(callback=UpdateI, pattern=pattern, flags=flags)
-        else:
-            raise Exception('Only one event for I values can be registered')
-
-    def register_event_apply_iv(self, pattern, v_keyword, i_keyword, flags=0):
-        if self.i_keyword is None and self.v_keyword is None:
-            self.i_keyword = i_keyword
-            self.v_keyword = v_keyword
-            self.register_callback(callback=UpdateVI, pattern=pattern, flags=flags)
-        else:
-            raise Exception('Only one event for I values can be registered')
-
-    def update_values(self, v=None, i=None):
-        if v:
-            self.cpx.setVoltage()
-        if i:
-            self.te.I = i
-        self.pub_status()
 
