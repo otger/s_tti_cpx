@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from entropyfw import Callback, logger
+from entropyfw import Callback
+from .logger import log
 
 """
 callbacks
@@ -9,17 +10,20 @@ All rights reserved.
 """
 
 
-class UpdateV(Callback):
-    name = 'updatev'
-    description = "update applied v to thermoelectric"
+class EnableOutput(Callback):
+    name = 'enable_output'
+    description = "enable an output of the power supply"
     version = "0.1"
 
     def functionality(self):
-        v = getattr(self.event.value, self.module.v_keyword, None)
-        if v is None:
-            logger.log.warning("UpdateV Callback event has no valid V value")
+        output = getattr(self.event.value, 'output', None)
+        if output is None:
+            log.warning("UpdateOutput has not valid output value")
             return
-        self.module.update_values(v=v)
+        try:
+            self.module.enable_output(output_1=(output == 1), output_2=(output == 2))
+        except:
+            log.exception('Exception on enable output callback')
 
 
 class UpdateI(Callback):
@@ -30,7 +34,7 @@ class UpdateI(Callback):
     def functionality(self):
         i = getattr(self.event.value, self.module.i_keyword, None)
         if i is None:
-            logger.log.warning("Updatei Callback event has no valid I value")
+            log.warning("Updatei Callback event has no valid I value")
             return
         self.module.update_values(i=i)
 
