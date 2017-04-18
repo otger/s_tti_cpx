@@ -4,7 +4,7 @@ from entropyfw import Module
 from entropyfw.common import get_utc_ts
 from pytticpx import CPX
 from .logger import log
-from .callbacks import UpdateV, UpdateI, UpdateVI
+from .callbacks import DisableOutput, EnableOutput, UpdateI, UpdateV, UpdateVI
 # from .web.api.resources import get_api_resources
 # from .web.blueprints import get_blueprint
 """
@@ -69,7 +69,7 @@ class EntropyTTiCPX(Module):
         return self.cpx.is_enabled(output)
 
     def get_status(self, output):
-        status = {'enabled': self.is_enabled(output),
+        return {'enabled': self.is_enabled(output),
                   'voltage_setting': self.get_voltage_setting(output),
                   'current_limit_setting': self.get_current_limit_setting(output),
                   'voltage': self.read_voltage(output),
