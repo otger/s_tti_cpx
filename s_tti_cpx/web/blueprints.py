@@ -23,19 +23,19 @@ __author__ = 'otger'
 
 def get_blueprint(mod_name):
 
-    tc08bp = Tc08BluePrint(mod_name, __name__,
-                           template_folder='templates')
+    tc08bp = TTiCPXBluePrint(mod_name, __name__,
+                             template_folder='templates')
 
     return tc08bp
 
 
-class Tc08BluePrint(EntropyBlueprint):
+class TTiCPXBluePrint(EntropyBlueprint):
     def register_routes(self):
         self.add_url_rule('/', 'index', self.index)
 
     def index(self):
         try:
             data = {'page_title': self.name}
-            return self.render_template('tc08/index.html', data=data)
+            return self.render_template('index.html', data=data)
         except TemplateNotFound:
             abort(404)

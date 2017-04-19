@@ -1,44 +1,49 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from entropyfw import Callback
-from .logger import log
 
 """
-callbacks
-Created by otger on 23/03/17.
+actions
+Created by otger on 19/04/17.
 All rights reserved.
 """
 
+from entropyfw import Action
+from .logger import log
 
-class TTiCPXCallback(Callback):
+
+class TTiCPXAction(Action):
     name = 'gen_callback'
     description = "Generic callback"
     version = "0.1"
 
     def get_output(self):
-        output = getattr(self.event.value, 'output', None)
+        output = self.get_arg('output')
         if output is None:
-            log.error("{} event has no valid 'output' value".format(self.__class__.__name__))
+            log.error("{} request has no valid 'output' value".format(self.__class__.__name__))
             raise Exception()
         return output
 
     def get_curr_limit(self):
-        curr_lim = getattr(self.event.value, 'current_limit', None)
+        curr_lim = self.get_arg('current_limit')
         if curr_lim is None:
-            log.error("{} event has no valid 'current_limit' value".format(self.__class__.__name__))
+            log.error("{} request has no valid 'current_limit' value".format(self.__class__.__name__))
             raise Exception()
         return curr_lim
 
     def get_voltage(self):
-        volts = getattr(self.event.value, 'voltage', None)
+        volts = self.get_arg('voltage')
         if volts is None:
-            log.error("{} event has no valid 'voltage' value".format(self.__class__.__name__))
+            log.error("{} request has no valid 'voltage' value".format(self.__class__.__name__))
             raise Exception()
         return volts
 
+    def functionality(self):
+        pass
 
-class EnableOutput(TTiCPXCallback):
+
+class EnableOutput(TTiCPXAction):
     name = 'enable_output'
+    arguments = [('output', int)]
     description = "Enable an output of the power supply"
     version = "0.1"
 
@@ -49,10 +54,12 @@ class EnableOutput(TTiCPXCallback):
             self.module.pub_status(output)
         except:
             log.exception('Exception on enable output callback')
+            raise
 
 
-class DisableOutput(TTiCPXCallback):
+class DisableOutput(TTiCPXAction):
     name = 'disable_output'
+    arguments = [('output', int)]
     description = "Disable an output of the power supply"
     version = "0.1"
 
@@ -66,8 +73,9 @@ class DisableOutput(TTiCPXCallback):
             raise
 
 
-class UpdateI(TTiCPXCallback):
+class UpdateI(TTiCPXAction):
     name = 'update_curr_limit'
+    arguments = [('output', int), ('current_limit', float)]
     description = "update current limit of an output"
     version = "0.1"
 
@@ -78,8 +86,9 @@ class UpdateI(TTiCPXCallback):
         self.module.pub_status(output)
 
 
-class UpdateV(TTiCPXCallback):
+class UpdateV(TTiCPXAction):
     name = 'update_voltage'
+    arguments = [('output', int), ('voltage', float)]
     description = "update voltage of an output"
     version = "0.1"
 
@@ -90,8 +99,9 @@ class UpdateV(TTiCPXCallback):
         self.module.pub_status(output)
 
 
-class UpdateVI(TTiCPXCallback):
+class UpdateVI(TTiCPXAction):
     name = 'update_vi'
+    arguments = [('output', int), ('voltage', float), ('current_limit', float)]
     description = "update applied voltage and current limit of an output"
     version = "0.1"
 
@@ -102,5 +112,3 @@ class UpdateVI(TTiCPXCallback):
         self.module.set_current_limit(output=output, amps=amps)
         self.module.set_voltage(output=output, volts=volts)
         self.module.pub_status(output)
-
-

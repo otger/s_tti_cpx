@@ -4,9 +4,9 @@ from entropyfw import Module
 from entropyfw.common import get_utc_ts
 from pytticpx import CPX
 from .logger import log
-from .callbacks import DisableOutput, EnableOutput, UpdateI, UpdateV, UpdateVI
-# from .web.api.resources import get_api_resources
-# from .web.blueprints import get_blueprint
+from . import actions
+from .web.api.resources import get_api_resources
+from .web.blueprints import get_blueprint
 """
 module
 Created by otger on 17/04/17.
@@ -21,6 +21,14 @@ class EntropyTTiCPX(Module):
     def __init__(self, name=None):
         Module.__init__(self, name=name)
         self.cpx = CPX()
+        self.register_action(actions.EnableOutput)
+        self.register_action(actions.DisableOutput)
+        self.register_action(actions.UpdateI)
+        self.register_action(actions.UpdateV)
+        self.register_action(actions.UpdateVI)
+        for r in get_api_resources():
+            self.register_api_resource(r)
+        self.register_blueprint(get_blueprint(self.name))
 
     def connect(self, ip, port=9221):
         self.cpx.connect(ip, port)
@@ -77,6 +85,5 @@ class EntropyTTiCPX(Module):
                   }
 
     def pub_status(self, output):
-
         self.pub_event('status.{}'.format(output), self.get_status(output))
 

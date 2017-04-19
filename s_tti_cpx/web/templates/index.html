@@ -1,0 +1,182 @@
+{% extends "sys/base.html" %}
+{% block scripts %}
+    <script>
+
+    $(document).ready(function(){
+      $("#btn_connect").click(function(e){
+          e.preventDefault();
+          var ip = $( "input#conn_ip" ).val();
+          var port = parseInt($( "input#conn_port" ).val());
+          data = {'ip':  ip,
+                  'port': port};
+
+          $.ajax({type: "POST",
+                url: "/api/{{ module.name }}/connect",
+                contentType: "application/json; charset=UTF-8",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success:function(result){
+                  console.log(result);
+                  showAlertSuccess("Connected to "+ip+":"+port+"!");
+                },
+                error:function(result){
+                  console.log(result);
+                  showAlertError("An error happened");
+                },
+           });
+        });
+    });
+    $(document).ready(function(){
+      $("#btn_disconnect").click(function(e){
+          e.preventDefault();
+          data = {};
+          $.ajax({type: "POST",
+                url: "/api/{{ module.name }}/disconnect",
+                contentType: "application/json; charset=UTF-8",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success:function(result){
+                  console.log(result);
+                  showAlertSuccess("Disconnected!");
+                },
+                error:function(result){
+                  console.log(result);
+                  showAlertError("An error happened");
+                },
+           });
+        });
+    });
+
+    $(document).ready(function(){
+      $("#enable_output_button").click(function(e){
+        e.preventDefault();
+        data = { }
+        var selected_channels = $( "select#select_output" ).val();
+        data['output_1'] = selected_channels.includes("1");
+        data['output_2'] = selected_channels.includes("2");
+        console.log(data);
+        $.ajax({type: "POST",
+              url: "/api/{{ module.name }}/enable_output",
+              contentType: "application/json; charset=UTF-8",
+              data: JSON.stringify(data),
+              dataType: "json",
+                success:function(result){
+                  console.log(result);
+                  showAlertSuccess("Completed command");
+                },
+                error:function(result){
+                  console.log(result);
+                  showAlertError("An error happened");
+                },
+           });
+
+        });
+      });
+
+    $(document).ready(function(){
+      $("#disable_output_button").click(function(e){
+        e.preventDefault();
+        data = { }
+        var selected_channels = $( "select#select_output" ).val();
+        data['output_1'] = selected_channels.includes("1");
+        data['output_2'] = selected_channels.includes("2");
+        console.log(data);
+        console.log(selected_channels);
+        $.ajax({type: "POST",
+              url: "/api/{{ module.name }}/disable_output",
+              contentType: "application/json; charset=UTF-8",
+              data: JSON.stringify(data),
+              dataType: "json",
+                success:function(result){
+                  console.log(result);
+                  showAlertSuccess("Completed command");
+                },
+                error:function(result){
+                  console.log(result);
+                  showAlertError("An error happened");
+                },
+           });
+
+        });
+      });
+
+
+    </script>
+{% endblock %}
+{% block main %}
+    <h1 class="hidden-xs-down"> TTi CPX Power Supply</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12"><h2>Connection</h2></div>
+        </div>
+        <div class="row">
+            <form>
+                <div class="form-group row">
+                    <label for="conn_ip" class="col-xs-12 col-md-3 col-lg-2 col-form-label">IP</label>
+                    <div class="col-xs-12 col-md-6 col-lg-4 col-form-label">
+                        <input class="form-control" type="str" value="172.16.17.55" id="conn_ip">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="conn_port" class="col-xs-12 col-md-3 col-lg-2 col-form-label">Port</label>
+                    <div class="col-xs-12 col-md-6 col-lg-4 col-form-label">
+                        <input class="form-control" type="int" value="9221" id="conn_port">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn_connect">Connect</button>
+                <button type="submit" class="btn btn-primary" id="btn_disconnect">Disconnect</button>
+            </form>
+        </div>
+
+        <hr>
+        <div class="row">
+            <div class="col-12"><h2>Outputs</h2></div>
+        </div>
+        <div class="row">
+            <form>
+                <div class="form-group row">
+                    <label for="select_output" class="col-xs-12 col-md-3 col-lg-2 col-form-label">Select Outputs</label>
+                    <div class="col-xs-12 col-md-6 col-lg-4 col-form-label">
+                        <select multiple="true" class="form-control" style="overflow: scroll" id="select_output">
+                            <option value="1">Output 1</option>
+                            <option value="2">Output 2</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="enable_output_button">Enable</button>
+                <button type="submit" class="btn btn-primary" id="disable_output_button">Disable</button>
+            </form>
+        </div>
+        <hr>
+
+        <div class="row">
+            <div class="col-12"><h2>Set current limit</h2></div>
+        </div>
+        <div class="row">
+            <form>
+                <div class="form-group row">
+                    <label for="select_output" class="col-xs-12 col-md-3 col-lg-2 col-form-label">Select Outputs</label>
+                    <div class="col-xs-12 col-md-6 col-lg-4 col-form-label">
+                        <select multiple class="form-control" style="overflow: scroll" id="select_output_curr_lim">
+                            <option value="1">Output 1</option>
+                            <option value="2">Output 2</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="conn_port" class="col-xs-12 col-md-3 col-lg-2 col-form-label">Port</label>
+                    <div class="col-xs-12 col-md-6 col-lg-4 col-form-label">
+                        <input class="form-control" type="float" value="0" id="current_limit_value">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn_set_curr_limit">Set current limit</button>
+            </form>
+        </div>
+        <hr>
+
+
+
+
+    </div>
+{% endblock %}
