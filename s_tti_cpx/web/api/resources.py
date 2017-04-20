@@ -101,7 +101,7 @@ class DisableOutput(ModuleResource):
 
 
 class UpdateI(ModuleResource):
-    name = 'update_curr_limit'
+    url = 'update_curr_limit'
     description = "update current limit of an output"
     version = "0.1"
 
@@ -119,7 +119,7 @@ class UpdateI(ModuleResource):
 
 
 class UpdateV(ModuleResource):
-    name = 'update_voltage'
+    url = 'update_voltage'
     description = "update voltage of an output"
     version = "0.1"
 
@@ -137,7 +137,7 @@ class UpdateV(ModuleResource):
 
 
 class UpdateVI(ModuleResource):
-    name = 'update_vi'
+    url = 'update_vi'
     description = "update applied voltage and current limit of an output"
     version = "0.1"
 
