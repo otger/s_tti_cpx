@@ -12,7 +12,7 @@ from .logger import log
 
 
 class TTiCPXAction(Action):
-    name = 'gen_callback'
+    name = 'gen_action'
     description = "Generic callback"
     version = "0.1"
 
