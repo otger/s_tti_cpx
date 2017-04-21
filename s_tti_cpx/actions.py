@@ -112,3 +112,18 @@ class UpdateVI(TTiCPXAction):
         self.module.set_current_limit(output=output, amps=amps)
         self.module.set_voltage(output=output, volts=volts)
         self.module.pub_status(output)
+
+
+class Connect(TTiCPXAction):
+    name = 'connect'
+    arguments = [('output', int), ('voltage', float), ('current_limit', float)]
+    description = "update applied voltage and current limit of an output"
+    version = "0.1"
+
+    def functionality(self):
+        output = self.get_output()
+        volts = self.get_voltage()
+        amps = self.get_curr_limit()
+        self.module.set_current_limit(output=output, amps=amps)
+        self.module.set_voltage(output=output, volts=volts)
+        self.module.pub_status(output)

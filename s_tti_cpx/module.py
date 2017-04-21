@@ -7,6 +7,7 @@ from .logger import log
 from . import actions
 from .web.api.resources import get_api_resources
 from .web.blueprints import get_blueprint
+import threading
 """
 module
 Created by otger on 17/04/17.
@@ -21,6 +22,11 @@ class EntropyTTiCPX(Module):
     def __init__(self, name=None):
         Module.__init__(self, name=name)
         self.cpx = CPX()
+
+        self._timer = None
+        self.interval = None
+        self._l = threading.Lock()
+
         self.register_action(actions.EnableOutput)
         self.register_action(actions.DisableOutput)
         self.register_action(actions.UpdateI)
@@ -78,12 +84,30 @@ class EntropyTTiCPX(Module):
 
     def get_status(self, output):
         return {'enabled': self.is_enabled(output),
-                  'voltage_setting': self.get_voltage_setting(output),
-                  'current_limit_setting': self.get_current_limit_setting(output),
-                  'voltage': self.read_voltage(output),
-                  'current': self.read_current(output)
-                  }
+                'voltage_setting': self.get_voltage_setting(output),
+                'current_limit_setting': self.get_current_limit_setting(output),
+                'voltage': self.read_voltage(output),
+                'current': self.read_current(output)
+               }
 
     def pub_status(self, output):
         self.pub_event('status.{}'.format(output), self.get_status(output))
+
+    def _timer_func(self):
+        self.pub_status(1)
+        self.pub_status(2)
+        self._timer = threading.Timer(self.interval, self._timer_func)
+        self._timer.start()
+
+    def start_timer(self, interval):
+        with self._l:
+            self.interval = interval
+            if self._timer is None:
+                self._timer_func()
+
+    def stop_timer(self):
+        with self._l:
+            if self._timer is not None:
+                self._timer.cancel()
+                self._timer = None
 
