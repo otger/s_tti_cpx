@@ -106,6 +106,7 @@ class UpdateVI(TTiCPXAction):
     version = "0.1"
 
     def functionality(self):
+        log.debug('Updating V and I by request from {}'.format(self.request.source))
         output = self.get_output()
         volts = self.get_voltage()
         amps = self.get_curr_limit()

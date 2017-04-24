@@ -36,6 +36,6 @@ class TTiCPXBluePrint(EntropyBlueprint):
     def index(self):
         try:
             data = {'page_title': self.name}
-            return self.render_template('index.html', data=data)
+            return self.render_template('tticpx/index.html', data=data)
         except TemplateNotFound:
             abort(404)

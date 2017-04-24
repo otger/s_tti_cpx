@@ -7,7 +7,7 @@
           e.preventDefault();
           var ip = $( "input#conn_ip" ).val();
           var port = parseInt($( "input#conn_port" ).val());
-          data = {'ip':  ip,
+          var data = {'ip':  ip,
                   'port': port};
 
           $.ajax({type: "POST",
@@ -50,7 +50,7 @@
     $(document).ready(function(){
       $("#enable_output_button").click(function(e){
         e.preventDefault();
-        data = { }
+        data = { };
         var selected_channels = $( "select#select_output" ).val();
         data['output_1'] = selected_channels.includes("1");
         data['output_2'] = selected_channels.includes("2");
@@ -76,7 +76,7 @@
     $(document).ready(function(){
       $("#disable_output_button").click(function(e){
         e.preventDefault();
-
+        var data = {};
         var selected_channels = $( "select#select_output" ).val();
         data['output_1'] = selected_channels.includes("1");
         data['output_2'] = selected_channels.includes("2");
@@ -102,12 +102,12 @@
     $(document).ready(function(){
       $("#btn_set_curr_limit").click(function(e){
         e.preventDefault();
-        data = { }
+        var data = { };
         var selected_channels = $( "select#select_output_vi" ).val();
         var current_limit = $( "input#current_limit_value" ).val();
         if( selected_channels ){
             selected_channels.forEach(function(output){
-                data = { }
+                var data = { };
                 data['output'] = parseInt(output);
                 data['current_limit'] = parseFloat(current_limit)
                 $.ajax({type: "POST",
@@ -133,12 +133,12 @@
     $(document).ready(function(){
       $("#btn_set_voltage").click(function(e){
         e.preventDefault();
-        data = { }
+        var data = { };
         var selected_channels = $( "select#select_output_vi" ).val();
         var voltage = $( "input#voltage_value" ).val();
         if (selected_channels){
             selected_channels.forEach(function(output){
-                data = { }
+                var data = { };
                 data['output'] = parseInt(output);
                 data['voltage'] = parseFloat(voltage)
                 $.ajax({type: "POST",
@@ -164,13 +164,13 @@
     $(document).ready(function(){
       $("#btn_set_v_and_i").click(function(e){
         e.preventDefault();
-        data = { }
+        var data = { };
         var selected_channels = $( "select#select_output_vi" ).val();
         var voltage = $( "input#voltage_value" ).val();
         var current_limit = $( "input#current_limit_value" ).val();
         if( selected_channels ){
             selected_channels.forEach(function(output){
-                data = { }
+                var data = { };
                 data['output'] = parseInt(output);
                 data['voltage'] = parseFloat(voltage)
                 data['current_limit'] = parseFloat(current_limit)
