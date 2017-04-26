@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from entropyfw.api.rest import ModuleResource
-from flask import jsonify
+from entropyfw.api.rest import ModuleResource, REST_STATUS
 from flask_restful import reqparse
-from entropyfw.common import get_utc_ts
 from .logger import log
 """
 resources
@@ -30,10 +28,9 @@ class Connect(ModuleResource):
             self.module.connect(ip, port)
         except Exception as ex:
             log.exception('Something went wrong when connecting (arguments: {0})'.format(args))
-
-        return jsonify({'args': args,
-                        'utc_ts': get_utc_ts(),
-                        'result': 'done'})
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
 class Disconnect(ModuleResource):
@@ -46,9 +43,9 @@ class Disconnect(ModuleResource):
             self.module.disconnect()
         except Exception as ex:
             log.exception('Something went wrong when disconnecting')
-
-        return jsonify({'utc_ts': get_utc_ts(),
-                        'result': 'done'})
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex))
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None)
 
 
 class EnableOutput(ModuleResource):
@@ -69,10 +66,9 @@ class EnableOutput(ModuleResource):
             self.module.enable_output(output_1=output_1, output_2=output_2)
         except Exception as ex:
             log.exception('Something went wrong when enabling output with arguments: {0}'.format(args))
-
-        return jsonify({'args': args,
-                        'utc_ts': get_utc_ts(),
-                        'result': 'done'})
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
 class DisableOutput(ModuleResource):
@@ -92,12 +88,49 @@ class DisableOutput(ModuleResource):
         output_2 = args['output_2']
         try:
             self.module.disable_output(output_1=output_1, output_2=output_2)
-        except:
+        except Exception as ex:
             log.exception('Exception on disable output callback')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
-        return jsonify({'args': args,
-                        'utc_ts': get_utc_ts(),
-                        'result': 'done'})
+
+class StartPubLoop(ModuleResource):
+    url = 'start_status_loop'
+    description = "Start a loop to publish tti cpx status periodically"
+    version = "0.1"
+
+    def __init__(self, module):
+        super(StartPubLoop, self).__init__(module)
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('interval', type=int, required=True, location='json')
+
+    def post(self):
+        args = self.reqparse.parse_args()
+        interval = args['interval']
+
+        try:
+            self.module.start_timer(interval=interval)
+        except Exception as ex:
+            log.exception('Exception when starting status publication loop')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
+
+
+class StopPubLoop(ModuleResource):
+    url = 'start_status_loop'
+    description = "Start a loop to publish tti cpx status periodically"
+    version = "0.1"
+
+    def post(self):
+        try:
+            self.module.stop_timer()
+        except Exception as ex:
+            log.exception('Exception when stopping status publication loop')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex))
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None)
 
 
 class UpdateI(ModuleResource):
@@ -115,7 +148,13 @@ class UpdateI(ModuleResource):
         args = self.reqparse.parse_args()
         output = args['output']
         amps = args['current_limit']
-        self.module.set_current_limit(output=output, amps=amps)
+        try:
+            self.module.set_current_limit(output=output, amps=amps)
+        except Exception as ex:
+            log.exception('Exception while setting current limit')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
 class UpdateV(ModuleResource):
@@ -133,7 +172,13 @@ class UpdateV(ModuleResource):
         args = self.reqparse.parse_args()
         output = args['output']
         volts = args['voltage']
-        self.module.set_voltage(output=output, volts=volts)
+        try:
+            self.module.set_voltage(output=output, volts=volts)
+        except Exception as ex:
+            log.exception('Exception while setting voltage')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
 class UpdateVI(ModuleResource):
@@ -153,9 +198,15 @@ class UpdateVI(ModuleResource):
         output = args['output']
         volts = args['voltage']
         amps = args['current_limit']
-        self.module.set_current_limit(output=output, amps=amps)
-        self.module.set_voltage(output=output, volts=volts)
+        try:
+            self.module.set_current_limit(output=output, amps=amps)
+            self.module.set_voltage(output=output, volts=volts)
+        except Exception as ex:
+            log.exception('Exception while setting current limit and voltage')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex), args=args)
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
 def get_api_resources():
-    return [Connect, Disconnect, EnableOutput, DisableOutput, UpdateV, UpdateI, UpdateVI]
+    return [Connect, Disconnect, EnableOutput, DisableOutput, UpdateV, UpdateI, UpdateVI, StartPubLoop, StopPubLoop]
