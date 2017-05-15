@@ -1,6 +1,53 @@
 {% extends "sys/base.html" %}
 {% block scripts %}
     <script>
+    function getCard(channel, value, type, units, ts){
+        var d = moment.utc(ts*1000);
+        var html = '<div class="col-xs-12 col-md-4 col-lg-3 small_pad" id="get_temp_result_'+channel+'">';
+        html += '<div class="mycard temperature">';
+        html += '<div><p class="small-text">'+channel+'</p></div>';
+        html += '<div class="text-right"><h1>'+parseFloat(value).toFixed(2)+'<small>'+units.charAt(0)+'</small></h1></div>';
+        html += '<div><small>' + d.format('HH:mm:ss')+' UTC</small></div>';
+        html += '</div>';
+        return html;
+    }
+
+    function show_status_output(output, data){
+    };
+
+    function show_status(status){
+      var container = $("#show-status");
+      container.empty();
+      for (var key in result) {
+          var el = result[key];
+          container.append(getCard(key, el["value"], el["tc_type"], el["units"], el["ts_utc"]));
+      };
+
+    }
+    $(document).ready(function(){
+      $("#btn_get_status").click(function(e){
+          e.preventDefault();
+
+          $.ajax({type: "POST",
+                url: "/api/{{ module.name }}/get_status",
+                contentType: "application/json; charset=UTF-8",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success:function(result){
+                  console.log(result);
+                  if (result['status'] == 'Error'){
+                    showAlert(result['result'], 'Error');
+                  }else{
+                    show_status(result['result']);
+                  }
+                },
+                error:function(result){
+                  console.log(result);
+                  showAlert("An error happened", 'Error');
+                },
+           });
+        });
+    });
 
     $(document).ready(function(){
       $("#btn_connect").click(function(e){
@@ -17,11 +64,15 @@
                 dataType: "json",
                 success:function(result){
                   console.log(result);
-                  showAlertSuccess("Connected to "+ip+":"+port+"!");
+                  if (result['status'] == 'Error'){
+                    showAlert(result['result'], 'Error');
+                  }else{
+                    showAlert("Connected to "+ip+":"+port+"!", 'Success');
+                  }
                 },
                 error:function(result){
                   console.log(result);
-                  showAlertError("An error happened");
+                  showAlert("An error happened", 'Error');
                 },
            });
         });
@@ -37,7 +88,11 @@
                 dataType: "json",
                 success:function(result){
                   console.log(result);
-                  showAlertSuccess("Disconnected!");
+                  if (result['status'] == 'Error'){
+                    showAlertError(result['result']);
+                  }else{
+                    showAlertSuccess("Disconnected!");
+                  }
                 },
                 error:function(result){
                   console.log(result);
@@ -52,24 +107,31 @@
         e.preventDefault();
         data = { };
         var selected_channels = $( "select#select_output" ).val();
-        data['output_1'] = selected_channels.includes("1");
-        data['output_2'] = selected_channels.includes("2");
-        console.log(data);
-        $.ajax({type: "POST",
-              url: "/api/{{ module.name }}/enable_output",
-              contentType: "application/json; charset=UTF-8",
-              data: JSON.stringify(data),
-              dataType: "json",
-                success:function(result){
-                  console.log(result);
-                  showAlertSuccess("Completed command");
-                },
-                error:function(result){
-                  console.log(result);
-                  showAlertError("An error happened");
-                },
-           });
+        if ( selected_channels ){
+            data['output_1'] = selected_channels.includes("1");
+            data['output_2'] = selected_channels.includes("2");
+            console.log(data);
+            $.ajax({type: "POST",
+                  url: "/api/{{ module.name }}/enable_output",
+                  contentType: "application/json; charset=UTF-8",
+                  data: JSON.stringify(data),
+                  dataType: "json",
+                    success:function(result){
+                      console.log(result);
+                      if (result['status'] == 'Error'){
+                        showAlertError(result['result']);
+                      }else{
+                          showAlertSuccess("Completed command");
+                      }
 
+                    },
+                    error:function(result){
+                      console.log(result);
+                      showAlertError("An error happened");
+                    },
+               });
+
+            };
         });
       });
 
@@ -78,23 +140,30 @@
         e.preventDefault();
         var data = {};
         var selected_channels = $( "select#select_output" ).val();
-        data['output_1'] = selected_channels.includes("1");
-        data['output_2'] = selected_channels.includes("2");
-        $.ajax({type: "POST",
-              url: "/api/{{ module.name }}/disable_output",
-              contentType: "application/json; charset=UTF-8",
-              data: JSON.stringify(data),
-              dataType: "json",
-                success:function(result){
-                  console.log(result);
-                  showAlertSuccess("Completed command");
-                },
-                error:function(result){
-                  console.log(result);
-                  showAlertError("An error happened");
-                },
-        });
-
+        if ( selected_channels ){
+            data['output_1'] = selected_channels.includes("1");
+            data['output_2'] = selected_channels.includes("2");
+            $.ajax({type: "POST",
+                  url: "/api/{{ module.name }}/disable_output",
+                  contentType: "application/json; charset=UTF-8",
+                  data: JSON.stringify(data),
+                  dataType: "json",
+                    success:function(result){
+                      console.log(result);
+                      if (result['status'] == 'Error'){
+                        showAlertError(result['result']);
+                      }else{
+                          showAlertSuccess("Completed command");
+                      }
+                    },
+                    error:function(result){
+                      console.log(result);
+                      showAlertError("An error happened");
+                    },
+            });
+        }else{
+          showAlert('Select a channel', 'Info');
+        };
       });
     });
 
@@ -117,7 +186,11 @@
                       dataType: "json",
                         success:function(result){
                           console.log(result);
-                          showAlertSuccess("Completed command");
+                          if (result['status'] == 'Error'){
+                            showAlertError(result['result']);
+                          }else{
+                              showAlertSuccess("Completed command");
+                          }
                         },
                         error:function(result){
                           console.log(result);
@@ -126,7 +199,9 @@
                 });
 
             });
-        }
+        }else{
+          showAlert('Select a channel', 'Info');
+        };
       });
     });
 
@@ -148,7 +223,11 @@
                       dataType: "json",
                         success:function(result){
                           console.log(result);
-                          showAlertSuccess("Completed command");
+                          if (result['status'] == 'Error'){
+                            showAlertError(result['result']);
+                          }else{
+                              showAlertSuccess("Completed command");
+                          }
                         },
                         error:function(result){
                           console.log(result);
@@ -157,7 +236,9 @@
                 });
 
             });
-        }
+        }else{
+          showAlert('Select a channel', 'Info');
+        };
       });
     });
 
@@ -181,7 +262,11 @@
                       dataType: "json",
                         success:function(result){
                           console.log(result);
-                          showAlertSuccess("Completed command");
+                          if (result['status'] == 'Error'){
+                            showAlertError(result['result']);
+                          }else{
+                              showAlertSuccess("Completed command");
+                          }
                         },
                         error:function(result){
                           console.log(result);
@@ -190,7 +275,9 @@
                 });
 
             });
-        }
+        }else{
+          showAlert('Select a channel', 'Info');
+        };
       });
     });
 
@@ -201,6 +288,20 @@
     <h1 class="hidden-xs-down"> TTi CPX Power Supply</h1>
 
     <div class="container">
+      <div class="row">
+          <div class="col-12"><h2>Status</h2></div>
+      </div>
+      <div class="row">
+          <div class="col-12" id="show-status"></div>
+      </div>
+      <div class="row">
+          <form>
+              <button type="submit" class="btn btn-primary" id="btn_get_status">Get Status</button>
+          </form>
+      </div>
+
+      <hr>
+
         <div class="row">
             <div class="col-12"><h2>Connection</h2></div>
         </div>

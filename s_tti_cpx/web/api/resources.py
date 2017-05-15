@@ -119,7 +119,7 @@ class StartPubLoop(ModuleResource):
 
 
 class StopPubLoop(ModuleResource):
-    url = 'start_status_loop'
+    url = 'stop_status_loop'
     description = "Start a loop to publish tti cpx status periodically"
     version = "0.1"
 
@@ -208,5 +208,24 @@ class UpdateVI(ModuleResource):
             return self.jsonify_return(status=REST_STATUS.Done, result=None, args=args)
 
 
+class Status(ModuleResource):
+    url = 'get_status'
+    description = "Status of power supply outputs"
+
+    def __init__(self, module):
+        super(Status, self).__init__(module)
+
+    def post(self):
+        outputs = {}
+        try:
+            outputs['output_1'] = self.module.get_output(1)
+            outputs['output_2'] = self.module.get_output(2)
+        except Exception as ex:
+            log.exception('Something went wrong when receiving output status')
+            return self.jsonify_return(status=REST_STATUS.Error, result=str(ex))
+        else:
+            return self.jsonify_return(status=REST_STATUS.Done, result=None)
+
+
 def get_api_resources():
-    return [Connect, Disconnect, EnableOutput, DisableOutput, UpdateV, UpdateI, UpdateVI, StartPubLoop, StopPubLoop]
+    return [Connect, Disconnect, EnableOutput, DisableOutput, UpdateV, UpdateI, UpdateVI, StartPubLoop, StopPubLoop, Status]
